@@ -22,7 +22,7 @@ public class PacketContainer {
         try {
             Field field = clazz.getDeclaredField(argument);
             field.setAccessible(true);
-            field.set(argument, value);
+            field.set(getPacketObject(), value);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -32,7 +32,7 @@ public class PacketContainer {
 
     public PacketContainer sendPacket(Player receiver) {
         recipients.add(receiver);
-        ReflectionUtil.sendPacket(receiver, getPacket());
+        ReflectionUtil.sendPacket(receiver, getPacketObject());
 
         return this;
     }
@@ -43,5 +43,15 @@ public class PacketContainer {
 
     public Set<Player> getRecipients() {
         return recipients;
+    }
+
+    private Object getPacketObject() {
+        Object obj = null;
+        try {
+            obj = getPacket().newInstance();
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return obj;
     }
 }

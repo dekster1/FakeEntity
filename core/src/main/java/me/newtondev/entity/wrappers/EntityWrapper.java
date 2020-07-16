@@ -18,7 +18,7 @@ public class EntityWrapper {
     private Class<?> clazz;
 
     private Object entityTypes;
-    private Class<?> entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
+    private Class<?> entityTypesClass;
     private boolean higher = ReflectionUtil.versionEqualsOrHigherThan("v1_13");
 
     public EntityWrapper(FakeEntityType type, Class<?> clazz) {
@@ -30,19 +30,26 @@ public class EntityWrapper {
         if (isValid()) {
             Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
             try {
+                if (higher) {
+                    entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
+                    entityTypes = entityTypesClass.getField(type.name()).get(null);
+                }
 
                 Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
-                entityTypes = entityTypesClass.getField(type.name()).get(null);
 
                 entity = (higher) ? constructor.newInstance(entityTypes, nmsWorld) :
                         constructor.newInstance(nmsWorld);
+
+                // Support for pitch and yaw will come soon, since there are different methods from 1.8 to 1.15
+                entity.getClass().getMethod("setPosition", double.class, double.class, double.class)
+                        .invoke(entity, location.getX(), location.getY(), location.getZ());
 
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException
                     | NoSuchFieldException | InstantiationException e) {
                 e.printStackTrace();
             }
         } else {
-            throw new InvalidVersionException("Specified entity is not available for your server version.");
+            throw new InvalidVersionException("Entity " + type.name() + " is not available for this server version.");
         }
     }
 
@@ -55,6 +62,10 @@ public class EntityWrapper {
         }
         
         return value;
+    }
+
+    public Object getEntity() {
+        return entity;
     }
 
     private boolean isValid() {

@@ -1,0 +1,8 @@
+name: FakeEntity
+version: 1.0
+author: Newton
+main: me.newtondev.entityexample.Example
+api-version: 1.13
+commands:
+  entitytest:
+    description: Example

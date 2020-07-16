@@ -37,11 +37,9 @@ public class FakeEntity {
         }
 
         PacketContainer packet = new PacketContainer(PacketType.SPAWN_ENTITY)
-                .write("a", wrapper.getEntityValue("getId"))
-                .write("b", wrapper.getEntityValue("getDataWatcher"))
-                .write("c", false);
+                .write("a", wrapper.getEntityValue("getId"));
 
-        viewers.forEach(packet::sendPacket);
+        this.viewers.forEach(packet::sendPacket);
     }
 
     public FakeEntity setLocation(Location location) {
@@ -61,9 +59,29 @@ public class FakeEntity {
         return this;
     }
 
+    /*public void updateMetadata() {
+        PacketContainer<?> packet = new PacketContainer<>(PacketType.ENTITY_METADATA,
+                wrapper.getEntityValue("getId"),
+                wrapper.getEntityValue("getDataWatcher"),
+                true);
+
+        viewers.forEach(packet::sendPacket);
+    }*/
+
+    /*public void addEquipment() {
+        PacketContainer packet = new PacketContainer(PacketType.ENTITY_EQUIPMENT)
+                .write("a", wrapper.getEntityValue("getId"))
+                .write("b", wrapper.getEntityValue("getDataWatcher"))
+                .write("c", false);
+
+        viewers.forEach(packet::sendPacket);
+    }*/
+
     public void remove() {
-        new PacketContainer(PacketType.ENTITY_DESTROY)
+        PacketContainer packet = new PacketContainer(PacketType.ENTITY_DESTROY)
                 .write("a", wrapper.getEntityValue("getId"));
+
+        viewers.forEach(packet::sendPacket);
     }
 
     public Location getLocation() {

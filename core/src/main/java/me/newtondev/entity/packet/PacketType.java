@@ -5,7 +5,8 @@ import me.newtondev.entity.util.ReflectionUtil;
 public enum PacketType {
     SPAWN_ENTITY(ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving")),
     ENTITY_DESTROY(ReflectionUtil.getNMSClass("PacketPlayEntityDestroy")),
-    ENTITY_METADATA(ReflectionUtil.getNMSClass("PacketPlayOutEntityMetadata"));
+    ENTITY_METADATA(ReflectionUtil.getNMSClass("PacketPlayOutEntityMetadata")),
+    ENTITY_EQUIPMENT(ReflectionUtil.getNMSClass("PacketPlayOutEntityEquipment"));
 
     private final Class<?> packetClass;
 
