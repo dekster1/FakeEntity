@@ -36,10 +36,8 @@ public class FakeEntity {
             e.printStackTrace();
         }
 
-        PacketContainer packet = new PacketContainer(PacketType.SPAWN_ENTITY)
-                .write("a", wrapper.getEntityValue("getId"));
-
-        this.viewers.forEach(packet::sendPacket);
+        PacketContainer packet = new PacketContainer(PacketType.SPAWN_ENTITY, wrapper.getEntity());
+        viewers.forEach(packet::sendPacket);
     }
 
     public FakeEntity setLocation(Location location) {
@@ -54,7 +52,7 @@ public class FakeEntity {
         return this;
     }
 
-    public FakeEntity set(String param, boolean value) {
+    public FakeEntity setAttribute(String param, boolean value) {
 
         return this;
     }
@@ -78,10 +76,10 @@ public class FakeEntity {
     }*/
 
     public void remove() {
-        PacketContainer packet = new PacketContainer(PacketType.ENTITY_DESTROY)
+        /*PacketContainer packet = new PacketContainer(PacketType.ENTITY_DESTROY)
                 .write("a", wrapper.getEntityValue("getId"));
 
-        viewers.forEach(packet::sendPacket);
+        viewers.forEach(packet::sendPacket);*/
     }
 
     public Location getLocation() {

@@ -3,38 +3,33 @@ package me.newtondev.entity.packet;
 import me.newtondev.entity.util.ReflectionUtil;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
 public class PacketContainer {
 
-    private PacketType packet;
-    private Set<Player> recipients;
+    private final PacketType packet;
+    private final Set<Player> recipients;
+    private Object packetObject;
 
-    public PacketContainer(PacketType packet) {
+    public PacketContainer(PacketType packet, Object... parameters) {
         this.packet = packet;
         this.recipients = new HashSet<>();
-    }
 
-    public PacketContainer write(String argument, Object value) {
-        Class<?> clazz = packet.getPacketClass();
+        Constructor<?> constructor = getPacket().getDeclaredConstructors()[0];
         try {
-            Field field = clazz.getDeclaredField(argument);
-            field.setAccessible(true);
-            field.set(getPacketObject(), value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+            packetObject = constructor.newInstance((Object) parameters);
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();
         }
-
-        return this;
     }
 
-    public PacketContainer sendPacket(Player receiver) {
+    public void sendPacket(Player receiver) {
         recipients.add(receiver);
         ReflectionUtil.sendPacket(receiver, getPacketObject());
 
-        return this;
     }
 
     public Class<?> getPacket() {
@@ -45,13 +40,7 @@ public class PacketContainer {
         return recipients;
     }
 
-    private Object getPacketObject() {
-        Object obj = null;
-        try {
-            obj = getPacket().newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            e.printStackTrace();
-        }
-        return obj;
+    public Object getPacketObject() {
+        return packetObject;
     }
 }

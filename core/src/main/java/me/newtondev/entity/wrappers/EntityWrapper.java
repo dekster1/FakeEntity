@@ -18,7 +18,6 @@ public class EntityWrapper {
     private Class<?> clazz;
 
     private Object entityTypes;
-    private Class<?> entityTypesClass;
     private boolean higher = ReflectionUtil.versionEqualsOrHigherThan("v1_13");
 
     public EntityWrapper(FakeEntityType type, Class<?> clazz) {
@@ -31,7 +30,7 @@ public class EntityWrapper {
             Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
             try {
                 if (higher) {
-                    entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
+                    Class<?> entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
                     entityTypes = entityTypesClass.getField(type.name()).get(null);
                 }
 
@@ -62,6 +61,14 @@ public class EntityWrapper {
         }
         
         return value;
+    }
+
+    public void setAttribute(String arg, boolean flag) {
+        try {
+            entity.getClass().getMethod(arg, boolean.class).invoke(entity, flag);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     public Object getEntity() {
