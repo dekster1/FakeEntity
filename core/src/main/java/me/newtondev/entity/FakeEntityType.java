@@ -7,7 +7,7 @@ public enum FakeEntityType {
 
     ARMOR_STAND("EntityArmorStand"),
     ARROW("EntityArrow"),
-    @Legacy(version = "v1_14_R1")
+    @Legacy(version = "v1_15_R1")
     BEE("EntityBee");
 
     String entity;

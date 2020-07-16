@@ -46,9 +46,15 @@ public class EntityWrapper {
         }
     }
 
-    private Object getDataWatcher() {
-
-        return null;
+    public Object getEntityValue(String method) {
+        Object value = null;
+        try {
+            value = entity.getClass().getMethod(method).invoke(entity);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        
+        return value;
     }
 
     private boolean isValid() {
@@ -72,6 +78,5 @@ public class EntityWrapper {
     private String getVersion(Field field) {
         return field.getAnnotation(Legacy.class).version();
     }
-
 
 }
