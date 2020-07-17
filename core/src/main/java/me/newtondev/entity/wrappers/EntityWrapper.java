@@ -25,13 +25,18 @@ public class EntityWrapper {
         this.clazz = clazz;
     }
 
+    /*
+    * Injects an entity at a specified location.
+     */
     public void injectEntity(Location location) throws InvalidVersionException {
         if (isValid()) {
+            String position = "setPosition";
             Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
             try {
                 if (higher) {
                     Class<?> entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
                     entityTypes = entityTypesClass.getField(type.name()).get(null);
+                    position = "setPositionRotation";
                 }
 
                 Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
@@ -39,9 +44,8 @@ public class EntityWrapper {
                 entity = (higher) ? constructor.newInstance(entityTypes, nmsWorld) :
                         constructor.newInstance(nmsWorld);
 
-                // Support for pitch and yaw will come soon, since there are different methods from 1.8 to 1.15
-                entity.getClass().getMethod("setPosition", double.class, double.class, double.class)
-                        .invoke(entity, location.getX(), location.getY(), location.getZ());
+                entity.getClass().getMethod(position, double.class, double.class, double.class, float.class, float.class)
+                        .invoke(entity, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
 
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException
                     | NoSuchFieldException | InstantiationException e) {
@@ -61,14 +65,6 @@ public class EntityWrapper {
         }
         
         return value;
-    }
-
-    public void setAttribute(String arg, boolean flag) {
-        try {
-            entity.getClass().getMethod(arg, boolean.class).invoke(entity, flag);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
     }
 
     public Object getEntity() {

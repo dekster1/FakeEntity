@@ -1,8 +1,8 @@
 package me.newtondev.entity;
 
 import me.newtondev.entity.exception.InvalidVersionException;
-import me.newtondev.entity.packet.PacketContainer;
-import me.newtondev.entity.packet.PacketType;
+import me.newtondev.entity.packet.PacketBuilder;
+import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.wrappers.EntityWrapper;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,19 +25,21 @@ public class FakeEntity {
         this.type = type;
         this.location = location;
         this.viewers = new HashSet<>();
+        this.wrapper = new EntityWrapper(type, type.getEntityClass());
     }
 
-    public void spawn() {
-        wrapper = new EntityWrapper(type, type.getEntityClass());
-
+    public FakeEntity spawn() {
         try {
             wrapper.injectEntity(location);
         } catch (InvalidVersionException e) {
             e.printStackTrace();
         }
 
-        PacketContainer packet = new PacketContainer(PacketType.SPAWN_ENTITY, wrapper.getEntity());
-        viewers.forEach(packet::sendPacket);
+        Object packet = new PacketBuilder().buildPlayOutSpawnEntityLiving(wrapper.getEntity());
+        updateMetadata();
+        send(packet);
+
+        return this;
     }
 
     public FakeEntity setLocation(Location location) {
@@ -57,14 +59,14 @@ public class FakeEntity {
         return this;
     }
 
-    /*public void updateMetadata() {
-        PacketContainer<?> packet = new PacketContainer<>(PacketType.ENTITY_METADATA,
-                wrapper.getEntityValue("getId"),
+    public void updateMetadata() {
+        Object packet = new PacketBuilder().buildPlayOutEntityMetadata(
+                (int) wrapper.getEntityValue("getId"),
                 wrapper.getEntityValue("getDataWatcher"),
-                true);
+                false);
 
-        viewers.forEach(packet::sendPacket);
-    }*/
+        send(packet);
+    }
 
     /*public void addEquipment() {
         PacketContainer packet = new PacketContainer(PacketType.ENTITY_EQUIPMENT)
@@ -76,10 +78,10 @@ public class FakeEntity {
     }*/
 
     public void remove() {
-        /*PacketContainer packet = new PacketContainer(PacketType.ENTITY_DESTROY)
-                .write("a", wrapper.getEntityValue("getId"));
+        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(
+                (int) wrapper.getEntityValue("getId"));
 
-        viewers.forEach(packet::sendPacket);*/
+        send(packet);
     }
 
     public Location getLocation() {
@@ -88,6 +90,10 @@ public class FakeEntity {
 
     public Set<Player> getViewers() {
         return viewers;
+    }
+
+    private void send(Object packet) {
+        viewers.forEach(p -> ReflectionUtil.sendPacket(p, packet));
     }
 
 }
