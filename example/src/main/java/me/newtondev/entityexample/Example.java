@@ -2,10 +2,13 @@ package me.newtondev.entityexample;
 
 import me.newtondev.entity.FakeEntity;
 import me.newtondev.entity.FakeEntityType;
+import me.newtondev.entity.equipment.ItemSlot;
 import me.newtondev.entity.util.ReflectionUtil;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Example extends JavaPlugin {
@@ -28,12 +31,12 @@ public class Example extends JavaPlugin {
      * Spawning a simple entity.
      */
     public void spawnEntity(Player player) {
-        FakeEntity entity = new FakeEntity(FakeEntityType.COW)
+        FakeEntity entity = new FakeEntity(FakeEntityType.ZOMBIE)
                 .addViewer(player)
                 .setLocation(player.getLocation())
-                .setAttribute("setCollidable", false)
                 .spawn();
 
         entity.getViewers().forEach(p -> p.sendMessage("An entity has been spawned for you!"));
+        entity.addEquipment(ItemSlot.CHEST, new ItemStack(Material.DIAMOND_CHESTPLATE));
     }
 }

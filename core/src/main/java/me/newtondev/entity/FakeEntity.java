@@ -1,11 +1,13 @@
 package me.newtondev.entity;
 
+import me.newtondev.entity.equipment.ItemSlot;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.packet.PacketBuilder;
 import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.wrappers.EntityWrapper;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -63,19 +65,18 @@ public class FakeEntity {
         Object packet = new PacketBuilder().buildPlayOutEntityMetadata(
                 (int) wrapper.getEntityValue("getId"),
                 wrapper.getEntityValue("getDataWatcher"),
-                false);
+                true);
 
         send(packet);
     }
 
-    /*public void addEquipment() {
-        PacketContainer packet = new PacketContainer(PacketType.ENTITY_EQUIPMENT)
-                .write("a", wrapper.getEntityValue("getId"))
-                .write("b", wrapper.getEntityValue("getDataWatcher"))
-                .write("c", false);
+    public void addEquipment(ItemSlot slot, ItemStack item) {
+        Object packet = new PacketBuilder().buildPlayOutEntityEquipment(
+                (int) wrapper.getEntityValue("getId"),
+                slot, item);
 
-        viewers.forEach(packet::sendPacket);
-    }*/
+        send(packet);
+    }
 
     public void remove() {
         Object packet = new PacketBuilder().buildPlayOutEntityDestroy(
@@ -86,6 +87,10 @@ public class FakeEntity {
 
     public Location getLocation() {
         return location;
+    }
+
+    public FakeEntityType getType() {
+        return type;
     }
 
     public Set<Player> getViewers() {

@@ -31,6 +31,14 @@ public class ReflectionUtil {
         }
     }
 
+    public static Class<?> getBukkitClass(String... path) {
+        try {
+            return Class.forName("org.bukkit.craftbukkit." + VERSION + "." + path[0] + "." + path[1]);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public static boolean versionEqualsOrHigherThan(String value) {
         String[] values = VERSION.split("_");
         String[] diff = value.split("_");
