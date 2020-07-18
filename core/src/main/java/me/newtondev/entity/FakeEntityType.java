@@ -1,7 +1,6 @@
 package me.newtondev.entity;
 
 import me.newtondev.entity.util.ReflectionUtil;
-import me.newtondev.entity.validator.Legacy;
 
 public enum FakeEntityType {
 

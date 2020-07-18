@@ -1,7 +1,9 @@
 package me.newtondev.entity.packet;
 
 import me.newtondev.entity.equipment.ItemSlot;
+import me.newtondev.entity.util.AccessUtil;
 import me.newtondev.entity.util.ReflectionUtil;
+import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Constructor;
@@ -69,6 +71,27 @@ public class PacketBuilder {
             obj = constructor.newInstance(id, slot.toNMS(), nmsItem);
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException
                 | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        return obj;
+    }
+
+    public Object buildPlayOutEntityTeleport(int id, Location location, boolean onGround) {
+        Object obj = null;
+        try {
+
+            Class<?> aClass = PacketType.ENTITY_TELEPORT.getPacketClass();
+            obj = aClass.newInstance();
+            AccessUtil.setValue(obj, "a", id);
+            AccessUtil.setValue(obj, "b", location.getX());
+            AccessUtil.setValue(obj, "c", location.getY());
+            AccessUtil.setValue(obj, "d", location.getZ());
+            AccessUtil.setValue(obj, "e", (byte) location.getYaw());
+            AccessUtil.setValue(obj, "f", (byte) location.getPitch());
+            AccessUtil.setValue(obj, "g", onGround);
+
+        } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
 

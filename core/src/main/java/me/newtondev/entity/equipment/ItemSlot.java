@@ -4,10 +4,10 @@ import me.newtondev.entity.util.ReflectionUtil;
 
 public enum ItemSlot {
 
-    CHEST,
-    FEET,
     HEAD,
+    CHEST,
     LEGS,
+    FEET,
     HAND,
     MAINHAND,
     OFFHAND;

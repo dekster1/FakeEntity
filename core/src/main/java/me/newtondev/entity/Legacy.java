@@ -1,4 +1,4 @@
-package me.newtondev.entity.validator;
+package me.newtondev.entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

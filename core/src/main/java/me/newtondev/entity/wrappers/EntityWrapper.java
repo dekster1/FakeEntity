@@ -3,7 +3,7 @@ package me.newtondev.entity.wrappers;
 import me.newtondev.entity.FakeEntityType;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.util.ReflectionUtil;
-import me.newtondev.entity.validator.Legacy;
+import me.newtondev.entity.Legacy;
 import org.bukkit.Location;
 
 import java.lang.annotation.Annotation;

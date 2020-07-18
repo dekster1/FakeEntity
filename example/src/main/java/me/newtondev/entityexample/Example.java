@@ -1,34 +1,25 @@
 package me.newtondev.entityexample;
 
 import me.newtondev.entity.FakeEntity;
+import me.newtondev.entity.FakeEntityFactory;
 import me.newtondev.entity.FakeEntityType;
 import me.newtondev.entity.equipment.ItemSlot;
-import me.newtondev.entity.util.ReflectionUtil;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Example extends JavaPlugin {
 
+    /*
+    * This may be registered to allow the entity custom events.
+     */
     public void onEnable() {
-        this.getLogger().info("Running in " + ReflectionUtil.getVersion());
-    }
-
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (sender instanceof Player) {
-            if (cmd.getName().equals("entitytest")) {
-                Player p = (Player) sender;
-                spawnEntity(p);
-            }
-        }
-        return false;
+        FakeEntityFactory.INSTANCE.register(this);
     }
 
     /*
-     * Spawning a simple entity.
+     * Spawning a simple entity for a player.
      */
     public void spawnEntity(Player player) {
         FakeEntity entity = new FakeEntity(FakeEntityType.ZOMBIE)
@@ -36,7 +27,8 @@ public class Example extends JavaPlugin {
                 .setLocation(player.getLocation())
                 .spawn();
 
-        entity.getViewers().forEach(p -> p.sendMessage("An entity has been spawned for you!"));
+        // All entity attributes must be added after spawn
         entity.addEquipment(ItemSlot.CHEST, new ItemStack(Material.DIAMOND_CHESTPLATE));
+        entity.getViewers().forEach(p -> p.sendMessage("An entity has been spawned for you!"));
     }
 }

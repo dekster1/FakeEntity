@@ -3,6 +3,7 @@ package me.newtondev.entity;
 import me.newtondev.entity.equipment.ItemSlot;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.packet.PacketBuilder;
+import me.newtondev.entity.packet.PacketListener;
 import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.wrappers.EntityWrapper;
 import org.bukkit.Location;
@@ -41,6 +42,10 @@ public class FakeEntity {
         updateMetadata();
         send(packet);
 
+        if (FakeEntityFactory.INSTANCE.isRegistered()) {
+            FakeEntityFactory.INSTANCE.addEntity(this);
+            getViewers().forEach(PacketListener::registerListener);
+        }
         return this;
     }
 
@@ -63,7 +68,7 @@ public class FakeEntity {
 
     public void updateMetadata() {
         Object packet = new PacketBuilder().buildPlayOutEntityMetadata(
-                (int) wrapper.getEntityValue("getId"),
+                getId(),
                 wrapper.getEntityValue("getDataWatcher"),
                 true);
 
@@ -72,25 +77,42 @@ public class FakeEntity {
 
     public void addEquipment(ItemSlot slot, ItemStack item) {
         Object packet = new PacketBuilder().buildPlayOutEntityEquipment(
-                (int) wrapper.getEntityValue("getId"),
+                getId(),
                 slot, item);
 
         send(packet);
     }
 
-    public void remove() {
-        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(
-                (int) wrapper.getEntityValue("getId"));
+    public void teleport(Location location) {
+        teleport(location, true);
+    }
+
+    public void teleport(Location location, boolean onGround) {
+        Object packet = new PacketBuilder().buildPlayOutEntityTeleport(
+                getId(),
+                location, onGround);
 
         send(packet);
     }
 
+    public void remove() {
+        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getId());
+        send(packet);
+
+        FakeEntityFactory.INSTANCE.removeEntity(this);
+    }
+
+    @Deprecated
     public Location getLocation() {
         return location;
     }
 
     public FakeEntityType getType() {
         return type;
+    }
+
+    public int getId() {
+        return (int) wrapper.getEntityValue("getId");
     }
 
     public Set<Player> getViewers() {
