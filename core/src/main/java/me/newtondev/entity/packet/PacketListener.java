@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import me.newtondev.entity.FakeEntity;
 import me.newtondev.entity.FakeEntityFactory;
+import me.newtondev.entity.query.Query;
+import me.newtondev.entity.query.QueryResult;
 import me.newtondev.entity.event.FakeEntityInteractEvent;
 import me.newtondev.entity.util.AccessUtil;
 import me.newtondev.entity.util.ReflectionUtil;
@@ -21,6 +23,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.player = player;
     }
 
+    @Query(result = {"a", "b"}, version = "1_13")
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         Class<?> packetClass = PacketType.USE_ENTITY.getPacketClass();
@@ -28,21 +31,20 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         if (msg.getClass().equals(packetClass)) {
 
             Class<?> bClass = ReflectionUtil.getNMSClass(packetClass.getSimpleName() + "$EnumEntityUseAction");
-            Object obj = msg.getClass().getMethod("b").invoke(msg);
+            Object obj = msg.getClass().getMethod(new QueryResult(this.getClass()).getResult()).invoke(msg);
             Object enumObject = bClass.getField("INTERACT_AT").get(null);
 
             Bukkit.getServer().getScheduler()
-                    .runTaskAsynchronously(FakeEntityFactory.INSTANCE.getPlugin(), () -> {
+                    .runTask(FakeEntityFactory.INSTANCE.getPlugin(), () -> {
                         if (obj == enumObject) {
 
-                            for (FakeEntity en : FakeEntityFactory.INSTANCE.getEntities()) {
+                            FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
                                 if (en.getId() == (int) AccessUtil.getValue(msg, "a")
                                         && en.getViewers().contains(player)) {
 
                                     Bukkit.getPluginManager().callEvent(new FakeEntityInteractEvent(en, player));
-                                    break;
                                 }
-                            }
+                            });
                         }
                     });
         }

@@ -25,18 +25,13 @@ public class EntityWrapper {
         this.clazz = clazz;
     }
 
-    /*
-    * Injects an entity at a specified location.
-     */
     public void injectEntity(Location location) throws InvalidVersionException {
         if (isValid()) {
-            String position = "setPosition";
             Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
             try {
                 if (higher) {
                     Class<?> entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
                     entityTypes = entityTypesClass.getField(type.name()).get(null);
-                    position = "setPositionRotation";
                 }
 
                 Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
@@ -44,7 +39,7 @@ public class EntityWrapper {
                 entity = (higher) ? constructor.newInstance(entityTypes, nmsWorld) :
                         constructor.newInstance(nmsWorld);
 
-                entity.getClass().getMethod(position, double.class, double.class, double.class, float.class, float.class)
+                entity.getClass().getMethod("setLocation", double.class, double.class, double.class, float.class, float.class)
                         .invoke(entity, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
 
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException

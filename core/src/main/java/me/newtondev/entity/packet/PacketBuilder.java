@@ -81,8 +81,8 @@ public class PacketBuilder {
         Object obj = null;
         try {
 
-            Class<?> aClass = PacketType.ENTITY_TELEPORT.getPacketClass();
-            obj = aClass.newInstance();
+            obj = PacketType.ENTITY_TELEPORT.getPacketClass().newInstance();
+
             AccessUtil.setValue(obj, "a", id);
             AccessUtil.setValue(obj, "b", location.getX());
             AccessUtil.setValue(obj, "c", location.getY());

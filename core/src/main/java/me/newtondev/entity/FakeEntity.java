@@ -1,11 +1,13 @@
 package me.newtondev.entity;
 
 import me.newtondev.entity.equipment.ItemSlot;
+import me.newtondev.entity.event.FakeEntitySpawnEvent;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.packet.PacketBuilder;
 import me.newtondev.entity.packet.PacketListener;
 import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.wrappers.EntityWrapper;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,7 +46,10 @@ public class FakeEntity {
 
         if (FakeEntityFactory.INSTANCE.isRegistered()) {
             FakeEntityFactory.INSTANCE.addEntity(this);
-            getViewers().forEach(PacketListener::registerListener);
+            Bukkit.getPluginManager().callEvent(new FakeEntitySpawnEvent(this, location));
+            for (Player p : viewers) {
+                PacketListener.registerListener(p);
+            }
         }
         return this;
     }
@@ -99,7 +104,9 @@ public class FakeEntity {
         Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getId());
         send(packet);
 
-        FakeEntityFactory.INSTANCE.removeEntity(this);
+        if (FakeEntityFactory.INSTANCE.isRegistered()) {
+            FakeEntityFactory.INSTANCE.removeEntity(this);
+        }
     }
 
     @Deprecated

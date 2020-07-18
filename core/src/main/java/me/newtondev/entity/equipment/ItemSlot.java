@@ -14,12 +14,12 @@ public enum ItemSlot {
 
     public Object toNMS() {
         Class<?> enumItemSlot = ReflectionUtil.getNMSClass("EnumItemSlot");
-        Object obj = null;
         try {
-            obj = enumItemSlot.getField(this.name()).get(null);
+            return enumItemSlot.getField(this.name()).get(null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        return obj;
+
+        return null;
     }
 }
