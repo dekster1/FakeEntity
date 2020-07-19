@@ -8,8 +8,6 @@ import me.newtondev.entity.event.FakeEntityInteractEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,16 +24,6 @@ public class Example extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (sender instanceof Player) {
-            if (cmd.getName().equals("entitytest")) {
-                Player p = (Player) sender;
-                spawnEntity(p);
-            }
-        }
-        return false;
-    }
-
     /*
      * Spawning a simple entity for a player.
      */
@@ -49,7 +37,8 @@ public class Example extends JavaPlugin implements Listener {
         entity.addEquipment(ItemSlot.CHEST, new ItemStack(Material.DIAMOND_CHESTPLATE));
         entity.getViewers().forEach(p -> p.sendMessage("An entity has been spawned for you!"));
 
-        Bukkit.getScheduler().runTaskLater(this, () -> entity.teleport(player.getLocation().add(2, 0, 2)), 20*10L);
+        // Make the entity look at player
+        Bukkit.getScheduler().runTaskTimer(this, () -> entity.lookAt(player.getLocation()), 1L, 1L);
     }
 
     @EventHandler

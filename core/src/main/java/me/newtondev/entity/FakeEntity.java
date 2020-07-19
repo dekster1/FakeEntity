@@ -1,6 +1,7 @@
 package me.newtondev.entity;
 
 import me.newtondev.entity.equipment.ItemSlot;
+import me.newtondev.entity.event.FakeEntityDeathEvent;
 import me.newtondev.entity.event.FakeEntitySpawnEvent;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.packet.PacketBuilder;
@@ -29,8 +30,8 @@ public class FakeEntity {
     public FakeEntity(FakeEntityType type, Location location) {
         this.type = type;
         this.location = location;
-        this.viewers = new HashSet<>();
         this.wrapper = new EntityWrapper(type, type.getEntityClass());
+        this.viewers = new HashSet<>();
     }
 
     public FakeEntity spawn() {
@@ -66,6 +67,16 @@ public class FakeEntity {
         return this;
     }
 
+    public FakeEntity removeViewer(Player player) {
+        this.viewers.remove(player);
+
+        if (FakeEntityFactory.INSTANCE.isRegistered() && viewers.size() <= 0) {
+            Bukkit.getPluginManager().callEvent(new FakeEntityDeathEvent(this));
+        }
+
+        return this;
+    }
+
     public FakeEntity setAttribute(String param, boolean value) {
 
         return this;
@@ -73,7 +84,7 @@ public class FakeEntity {
 
     public void updateMetadata() {
         Object packet = new PacketBuilder().buildPlayOutEntityMetadata(
-                getId(),
+                getEntityId(),
                 wrapper.getEntityValue("getDataWatcher"),
                 true);
 
@@ -82,7 +93,7 @@ public class FakeEntity {
 
     public void addEquipment(ItemSlot slot, ItemStack item) {
         Object packet = new PacketBuilder().buildPlayOutEntityEquipment(
-                getId(),
+                getEntityId(),
                 slot, item);
 
         send(packet);
@@ -93,23 +104,35 @@ public class FakeEntity {
     }
 
     public void teleport(Location location, boolean onGround) {
+        this.location = location;
         Object packet = new PacketBuilder().buildPlayOutEntityTeleport(
-                getId(),
+                getEntityId(),
                 location, onGround);
 
         send(packet);
     }
 
+    public void lookAt(Location location) {
+        Location target = getLocation().setDirection(location.subtract(getLocation()).toVector());
+        this.location = target;
+
+        Object[] packets = new PacketBuilder().buildPlayOutEntityLook(getEntityId(),
+                target.getYaw(), target.getPitch());
+
+        send(packets[0]);
+        send(packets[1]);
+    }
+
     public void remove() {
-        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getId());
+        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getEntityId());
         send(packet);
 
         if (FakeEntityFactory.INSTANCE.isRegistered()) {
             FakeEntityFactory.INSTANCE.removeEntity(this);
+            Bukkit.getPluginManager().callEvent(new FakeEntityDeathEvent(this));
         }
     }
 
-    @Deprecated
     public Location getLocation() {
         return location;
     }
@@ -118,7 +141,7 @@ public class FakeEntity {
         return type;
     }
 
-    public int getId() {
+    public int getEntityId() {
         return (int) wrapper.getEntityValue("getId");
     }
 

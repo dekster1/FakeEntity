@@ -1,5 +1,11 @@
 package me.newtondev.entity;
 
+import io.netty.channel.Channel;
+import me.newtondev.entity.packet.PacketListener;
+import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashSet;
@@ -13,6 +19,7 @@ public enum FakeEntityFactory {
 
     public void register(Plugin plugin) {
         this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(new SimpleListener(), plugin);
     }
 
     public Plugin getPlugin() {
@@ -35,5 +42,24 @@ public enum FakeEntityFactory {
 
     public Set<FakeEntity> getEntities() {
         return entities;
+    }
+
+    private static class SimpleListener implements Listener {
+
+        @EventHandler
+        public void onQuit(PlayerQuitEvent e) {
+            Channel channel = PacketListener.getChannel(e.getPlayer());
+            if ((channel != null) && (channel.pipeline().get("fake_entity_interact") != null)) {
+                channel.pipeline().remove("fake_entity_interact");
+
+                FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
+                    en.getViewers().remove(e.getPlayer());
+
+                    if (en.getViewers().size() <= 0) {
+                        en.remove();
+                    }
+                });
+            }
+        }
     }
 }

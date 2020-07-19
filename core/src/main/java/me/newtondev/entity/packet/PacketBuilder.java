@@ -12,6 +12,8 @@ import java.lang.reflect.InvocationTargetException;
 /*
 * Just a little packet builder with all the nms
 * attributes.
+*
+* @author 1iqintellectual
  */
 public class PacketBuilder {
 
@@ -87,8 +89,8 @@ public class PacketBuilder {
             AccessUtil.setValue(obj, "b", location.getX());
             AccessUtil.setValue(obj, "c", location.getY());
             AccessUtil.setValue(obj, "d", location.getZ());
-            AccessUtil.setValue(obj, "e", (byte) location.getYaw());
-            AccessUtil.setValue(obj, "f", (byte) location.getPitch());
+            AccessUtil.setValue(obj, "e", ((byte) (int) (location.getYaw() * 256F / 360F)));
+            AccessUtil.setValue(obj, "f", ((byte) (int) (location.getPitch() * 256F / 360F)));
             AccessUtil.setValue(obj, "g", onGround);
 
         } catch (IllegalAccessException | InstantiationException e) {
@@ -97,4 +99,27 @@ public class PacketBuilder {
 
         return obj;
     }
+
+    public Object[] buildPlayOutEntityLook(int id, float yaw, float pitch) {
+        Class<?> aClass = PacketType.ENTITY_LOOK.getPacketClass();
+        Class<?> bClass = PacketType.ENTITY_HEAD_ROTATION.getPacketClass();
+
+        try {
+
+            Object headRotation = bClass.newInstance();
+            AccessUtil.setValue(headRotation, "a", id);
+            AccessUtil.setValue(headRotation, "b", (byte) ((yaw % 360) * 256 / 360));
+            Constructor<?> constructor = aClass.getConstructors()[1];
+
+            return new Object[] {constructor.newInstance(id,
+                    (byte) ((yaw % 360) * 256 / 360), (byte) ((pitch % 360) * 256 / 360), false),
+                    headRotation};
+
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }
