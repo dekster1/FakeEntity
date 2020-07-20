@@ -19,7 +19,7 @@ public enum FakeEntityFactory {
 
     public void register(Plugin plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginManager().registerEvents(new SimpleListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new FakeEntityListener(), plugin);
     }
 
     public Plugin getPlugin() {
@@ -44,21 +44,13 @@ public enum FakeEntityFactory {
         return entities;
     }
 
-    private static class SimpleListener implements Listener {
+    private static class FakeEntityListener implements Listener {
 
         @EventHandler
         public void onQuit(PlayerQuitEvent e) {
             Channel channel = PacketListener.getChannel(e.getPlayer());
             if ((channel != null) && (channel.pipeline().get("fake_entity_interact") != null)) {
                 channel.pipeline().remove("fake_entity_interact");
-
-                FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
-                    en.getViewers().remove(e.getPlayer());
-
-                    if (en.getViewers().size() <= 0) {
-                        en.remove();
-                    }
-                });
             }
         }
     }

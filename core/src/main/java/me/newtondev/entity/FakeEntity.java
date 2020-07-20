@@ -18,10 +18,10 @@ import java.util.Set;
 
 public class FakeEntity {
 
-    private FakeEntityType type;
+    private final FakeEntityType type;
     private Location location;
-    private EntityWrapper wrapper;
-    private Set<Player> viewers;
+    private final EntityWrapper wrapper;
+    private final Set<Player> viewers;
 
     public FakeEntity(FakeEntityType type) {
         this(type, null);
@@ -36,22 +36,21 @@ public class FakeEntity {
 
     public FakeEntity spawn() {
         try {
+
             wrapper.injectEntity(location);
+            Object packet = new PacketBuilder().buildPlayOutSpawnEntityLiving(wrapper.getEntity());
+            updateMetadata();
+            send(packet);
+
+            if (FakeEntityFactory.INSTANCE.isRegistered()) {
+                FakeEntityFactory.INSTANCE.addEntity(this);
+                Bukkit.getPluginManager().callEvent(new FakeEntitySpawnEvent(this, location));
+                viewers.forEach(PacketListener::registerListener);
+            }
         } catch (InvalidVersionException e) {
             e.printStackTrace();
         }
 
-        Object packet = new PacketBuilder().buildPlayOutSpawnEntityLiving(wrapper.getEntity());
-        updateMetadata();
-        send(packet);
-
-        if (FakeEntityFactory.INSTANCE.isRegistered()) {
-            FakeEntityFactory.INSTANCE.addEntity(this);
-            Bukkit.getPluginManager().callEvent(new FakeEntitySpawnEvent(this, location));
-            for (Player p : viewers) {
-                PacketListener.registerListener(p);
-            }
-        }
         return this;
     }
 
@@ -69,15 +68,12 @@ public class FakeEntity {
 
     public FakeEntity removeViewer(Player player) {
         this.viewers.remove(player);
+        Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getEntityId());
+        ReflectionUtil.sendPacket(player, packet);
 
         if (FakeEntityFactory.INSTANCE.isRegistered() && viewers.size() <= 0) {
             Bukkit.getPluginManager().callEvent(new FakeEntityDeathEvent(this));
         }
-
-        return this;
-    }
-
-    public FakeEntity setAttribute(String param, boolean value) {
 
         return this;
     }

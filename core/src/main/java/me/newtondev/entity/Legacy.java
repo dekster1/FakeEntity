@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Legacy {
-    String version();
+    String version() default "1_9";
 }

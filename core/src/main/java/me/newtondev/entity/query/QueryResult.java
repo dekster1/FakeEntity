@@ -16,6 +16,7 @@ public class QueryResult {
     public String getResult() {
         for (Method method : clazz.getMethods()) {
             Annotation annotation = method.getAnnotation(Query.class);
+
             if (annotation != null) {
                 return (ReflectionUtil.versionLowerThan(getVersion(method))) ? getValue(method)[0] :
                         getValue(method)[1];

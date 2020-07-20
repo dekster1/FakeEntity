@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
     String[] result();
-    String version() default "1_9";
+    String version() default "1_13";
 }

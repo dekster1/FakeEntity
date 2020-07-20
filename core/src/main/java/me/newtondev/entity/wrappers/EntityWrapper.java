@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 
 public class EntityWrapper {
 
@@ -18,7 +17,6 @@ public class EntityWrapper {
     private Class<?> clazz;
 
     private Object entityTypes;
-    private boolean higher = ReflectionUtil.versionEqualsOrHigherThan("v1_13");
 
     public EntityWrapper(FakeEntityType type, Class<?> clazz) {
         this.type = type;
@@ -27,23 +25,28 @@ public class EntityWrapper {
 
     public void injectEntity(Location location) throws InvalidVersionException {
         if (isValid()) {
-            Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
+            boolean higher = ReflectionUtil.versionEqualsOrHigherThan("1_13");
             try {
+                Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
+                Class<?> worldClass = ReflectionUtil.getNMSClass("World");
+                Constructor<?> constructor;
+
                 if (higher) {
                     Class<?> entityTypesClass = ReflectionUtil.getNMSClass("EntityTypes");
                     entityTypes = entityTypesClass.getField(type.name()).get(null);
+
+                    constructor = clazz.getConstructor(entityTypesClass, worldClass);
+                    entity = constructor.newInstance(entityTypes, nmsWorld);
+
+                } else {
+                    constructor = clazz.getConstructor(worldClass);
+                    entity = constructor.newInstance(nmsWorld);
                 }
-
-                Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
-
-                entity = (higher) ? constructor.newInstance(entityTypes, nmsWorld) :
-                        constructor.newInstance(nmsWorld);
 
                 entity.getClass().getMethod("setLocation", double.class, double.class, double.class, float.class, float.class)
                         .invoke(entity, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
 
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException
-                    | NoSuchFieldException | InstantiationException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
@@ -55,7 +58,7 @@ public class EntityWrapper {
         Object value = null;
         try {
             value = entity.getClass().getMethod(method).invoke(entity);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         

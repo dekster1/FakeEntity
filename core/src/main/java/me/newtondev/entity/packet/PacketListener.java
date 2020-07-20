@@ -21,31 +21,30 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.player = player;
     }
 
-    @Query(result = {"a", "b"}, version = "1_13")
+    @Query(result = {"a", "b"})
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         Class<?> packetClass = PacketType.USE_ENTITY.getPacketClass();
 
-        if (msg.getClass() == packetClass) {
+        if (msg.getClass().isAssignableFrom(packetClass)) {
 
             Class<?> bClass = ReflectionUtil.getNMSClass(packetClass.getSimpleName() + "$EnumEntityUseAction");
             Object obj = msg.getClass().getMethod(new QueryResult(this.getClass()).getResult()).invoke(msg);
             Object enumObject = bClass.getField("INTERACT_AT").get(null);
 
-            Bukkit.getServer().getScheduler()
-                    .runTask(FakeEntityFactory.INSTANCE.getPlugin(), () -> {
-                        if (obj == enumObject) {
+            Bukkit.getServer().getScheduler().runTask(FakeEntityFactory.INSTANCE.getPlugin(), () -> {
+                if (obj == enumObject) {
 
-                            FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
-                                if (en.getEntityId() == (int) AccessUtil.getValue(msg, "a")
-                                        && en.getViewers().contains(player) && canInteract()) {
+                    FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
+                        if (en.getEntityId() == (int) AccessUtil.getValue(msg, "a")
+                                && en.getViewers().contains(player) && canInteract()) {
 
-                                    time = System.currentTimeMillis() + 500;
-                                    Bukkit.getPluginManager().callEvent(new FakeEntityInteractEvent(en, player));
-                                }
-                            });
+                            time = System.currentTimeMillis() + 500;
+                            Bukkit.getPluginManager().callEvent(new FakeEntityInteractEvent(en, player));
                         }
                     });
+                }
+            });
         }
         super.channelRead(ctx, msg);
     }
