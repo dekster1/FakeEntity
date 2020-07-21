@@ -8,6 +8,8 @@ import me.newtondev.entity.event.FakeEntityInteractEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,6 +26,14 @@ public class Example extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
     }
 
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("entitytest")) {
+            Player p = (Player) sender;
+            spawnEntity(p);
+        }
+        return false;
+    }
+
     /*
      * Spawning a simple entity for a player.
      */
@@ -31,10 +41,9 @@ public class Example extends JavaPlugin implements Listener {
         FakeEntity entity = new FakeEntity(FakeEntityType.ZOMBIE)
                 .addViewer(player)
                 .setLocation(player.getLocation())
-                .spawn();
+                .spawn()
+                .addEquipment(ItemSlot.CHEST, new ItemStack(Material.DIAMOND_CHESTPLATE));
 
-        // All entity attributes must be added after spawn
-        entity.addEquipment(ItemSlot.CHEST, new ItemStack(Material.DIAMOND_CHESTPLATE));
         entity.getViewers().forEach(p -> p.sendMessage("An entity has been spawned for you!"));
 
         // Make the entity look at player

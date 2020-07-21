@@ -3,10 +3,9 @@ package me.newtondev.entity.wrappers;
 import me.newtondev.entity.FakeEntityType;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.util.ReflectionUtil;
-import me.newtondev.entity.Legacy;
+import me.newtondev.entity.util.access.FieldAccessor;
 import org.bukkit.Location;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
@@ -26,6 +25,7 @@ public class EntityWrapper {
     public void injectEntity(Location location) throws InvalidVersionException {
         if (isValid()) {
             boolean higher = ReflectionUtil.versionEqualsOrHigherThan("1_13");
+
             try {
                 Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
                 Class<?> worldClass = ReflectionUtil.getNMSClass("World");
@@ -72,11 +72,10 @@ public class EntityWrapper {
     private boolean isValid() {
         try {
             Field field = type.getClass().getField(type.name());
-            Annotation annotation = field.getAnnotation(Legacy.class);
-            if (annotation == null) {
+            if (!FieldAccessor.hasLegacy(field)) {
                 return true;
             } else {
-                if (ReflectionUtil.versionEqualsOrHigherThan(getVersion(field))) {
+                if (ReflectionUtil.versionEqualsOrHigherThan(FieldAccessor.getLegacyVersion(field))) {
                     return true;
                 }
             }
@@ -86,9 +85,4 @@ public class EntityWrapper {
 
         return false;
     }
-
-    private String getVersion(Field field) {
-        return field.getAnnotation(Legacy.class).version();
-    }
-
 }

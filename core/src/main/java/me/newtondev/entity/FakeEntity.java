@@ -5,7 +5,6 @@ import me.newtondev.entity.event.FakeEntityDeathEvent;
 import me.newtondev.entity.event.FakeEntitySpawnEvent;
 import me.newtondev.entity.exception.InvalidVersionException;
 import me.newtondev.entity.packet.PacketBuilder;
-import me.newtondev.entity.packet.PacketListener;
 import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.wrappers.EntityWrapper;
 import org.bukkit.Bukkit;
@@ -19,9 +18,10 @@ import java.util.Set;
 public class FakeEntity {
 
     private final FakeEntityType type;
-    private Location location;
+    private       Location location;
     private final EntityWrapper wrapper;
     private final Set<Player> viewers;
+    private final FakeEntityFactory instance = FakeEntityFactory.INSTANCE;
 
     public FakeEntity(FakeEntityType type) {
         this(type, null);
@@ -38,14 +38,16 @@ public class FakeEntity {
         try {
 
             wrapper.injectEntity(location);
+
             Object packet = new PacketBuilder().buildPlayOutSpawnEntityLiving(wrapper.getEntity());
             updateMetadata();
             send(packet);
 
-            if (FakeEntityFactory.INSTANCE.isRegistered()) {
-                FakeEntityFactory.INSTANCE.addEntity(this);
+            if (instance.isRegistered()) {
+                instance.addEntity(this);
+                viewers.forEach(viewer -> instance.getChannelInjector().injectPlayer(viewer));
+
                 Bukkit.getPluginManager().callEvent(new FakeEntitySpawnEvent(this, location));
-                viewers.forEach(PacketListener::registerListener);
             }
         } catch (InvalidVersionException e) {
             e.printStackTrace();
@@ -71,44 +73,49 @@ public class FakeEntity {
         Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getEntityId());
         ReflectionUtil.sendPacket(player, packet);
 
-        if (FakeEntityFactory.INSTANCE.isRegistered() && viewers.size() <= 0) {
+        if (instance.isRegistered() && viewers.size() <= 0) {
             Bukkit.getPluginManager().callEvent(new FakeEntityDeathEvent(this));
         }
 
         return this;
     }
 
-    public void updateMetadata() {
+    public FakeEntity updateMetadata() {
         Object packet = new PacketBuilder().buildPlayOutEntityMetadata(
                 getEntityId(),
                 wrapper.getEntityValue("getDataWatcher"),
                 true);
 
         send(packet);
+        return this;
     }
 
-    public void addEquipment(ItemSlot slot, ItemStack item) {
+    public FakeEntity addEquipment(ItemSlot slot, ItemStack item) {
+
         Object packet = new PacketBuilder().buildPlayOutEntityEquipment(
                 getEntityId(),
                 slot, item);
 
         send(packet);
+        return this;
     }
 
-    public void teleport(Location location) {
+    public FakeEntity teleport(Location location) {
         teleport(location, true);
+        return this;
     }
 
-    public void teleport(Location location, boolean onGround) {
+    public FakeEntity teleport(Location location, boolean onGround) {
         this.location = location;
         Object packet = new PacketBuilder().buildPlayOutEntityTeleport(
                 getEntityId(),
                 location, onGround);
 
         send(packet);
+        return this;
     }
 
-    public void lookAt(Location location) {
+    public FakeEntity lookAt(Location location) {
         Location target = getLocation().setDirection(location.subtract(getLocation()).toVector());
         this.location = target;
 
@@ -117,16 +124,27 @@ public class FakeEntity {
 
         send(packets[0]);
         send(packets[1]);
+        return this;
     }
 
-    public void remove() {
+    public FakeEntity lookAt(float yaw, float pitch) {
+        Object[] packets = new PacketBuilder().buildPlayOutEntityLook(getEntityId(),
+                yaw, pitch);
+
+        send(packets[0]);
+        send(packets[1]);
+        return this;
+    }
+
+    public FakeEntity remove() {
         Object packet = new PacketBuilder().buildPlayOutEntityDestroy(getEntityId());
         send(packet);
 
-        if (FakeEntityFactory.INSTANCE.isRegistered()) {
-            FakeEntityFactory.INSTANCE.removeEntity(this);
+        if (instance.isRegistered()) {
+            instance.removeEntity(this);
             Bukkit.getPluginManager().callEvent(new FakeEntityDeathEvent(this));
         }
+        return this;
     }
 
     public Location getLocation() {
@@ -148,5 +166,4 @@ public class FakeEntity {
     private void send(Object packet) {
         viewers.forEach(p -> ReflectionUtil.sendPacket(p, packet));
     }
-
 }

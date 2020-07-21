@@ -1,11 +1,12 @@
 package me.newtondev.entity;
 
-import io.netty.channel.Channel;
-import me.newtondev.entity.packet.PacketListener;
+import me.newtondev.entity.packet.netty.ChannelInjector;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashSet;
@@ -16,14 +17,20 @@ public enum FakeEntityFactory {
     INSTANCE;
 
     private Plugin plugin;
+    private ChannelInjector channelInjector;
 
     public void register(Plugin plugin) {
         this.plugin = plugin;
+        this.channelInjector = new ChannelInjector(plugin);
         Bukkit.getPluginManager().registerEvents(new FakeEntityListener(), plugin);
     }
 
     public Plugin getPlugin() {
         return plugin;
+    }
+
+    public ChannelInjector getChannelInjector() {
+        return channelInjector;
     }
 
     public boolean isRegistered() {
@@ -46,12 +53,18 @@ public enum FakeEntityFactory {
 
     private static class FakeEntityListener implements Listener {
 
+        private final ChannelInjector injector = FakeEntityFactory.INSTANCE.getChannelInjector();
+
         @EventHandler
         public void onQuit(PlayerQuitEvent e) {
-            Channel channel = PacketListener.getChannel(e.getPlayer());
-            if ((channel != null) && (channel.pipeline().get("fake_entity_interact") != null)) {
-                channel.pipeline().remove("fake_entity_interact");
-            }
+            Player player = e.getPlayer();
+            injector.uninjectPlayer(player);
+        }
+
+        @EventHandler
+        public void onPluginDisable(PluginDisableEvent e) {
+            injector.close();
+            FakeEntityFactory.INSTANCE.getEntities().forEach(FakeEntity::remove);
         }
     }
 }

@@ -1,8 +1,10 @@
-package me.newtondev.entity.util;
+package me.newtondev.entity.util.access;
+
+import me.newtondev.entity.Legacy;
 
 import java.lang.reflect.Field;
 
-public class AccessUtil {
+public class FieldAccessor {
 
     public static void setValue(Object obj, String argument, Object value) {
         try {
@@ -25,5 +27,13 @@ public class AccessUtil {
         }
 
         return null;
+    }
+
+    public static boolean hasLegacy(Field field) {
+        return (field.isAnnotationPresent(Legacy.class));
+    }
+
+    public static String getLegacyVersion(Field field) {
+        return (field.getAnnotation(Legacy.class).version());
     }
 }

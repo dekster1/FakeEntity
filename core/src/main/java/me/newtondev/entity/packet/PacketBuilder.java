@@ -3,7 +3,7 @@ package me.newtondev.entity.packet;
 import me.newtondev.entity.equipment.ItemSlot;
 import me.newtondev.entity.query.Query;
 import me.newtondev.entity.query.QueryResult;
-import me.newtondev.entity.util.AccessUtil;
+import me.newtondev.entity.util.access.FieldAccessor;
 import me.newtondev.entity.util.ReflectionUtil;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -33,12 +33,14 @@ public class PacketBuilder {
     public Object buildPlayOutEntityDestroy(int id) {
         try {
             Class<?> aClass = PacketType.ENTITY_DESTROY.getPacketClass();
-            Constructor<?> constructor = aClass.getConstructors()[1];
+            Constructor<?> constructor = aClass.getConstructor(int.class);
 
             return constructor.newInstance(id);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+
+        return null;
     }
 
     public Object buildPlayOutEntityMetadata(int id, Object dataWatcher, boolean arg) {
@@ -83,13 +85,13 @@ public class PacketBuilder {
         try {
 
             Object obj = PacketType.ENTITY_TELEPORT.getPacketClass().newInstance();
-            AccessUtil.setValue(obj, "a", id);
-            AccessUtil.setValue(obj, "b", location.getX());
-            AccessUtil.setValue(obj, "c", location.getY());
-            AccessUtil.setValue(obj, "d", location.getZ());
-            AccessUtil.setValue(obj, "e", ((byte) (int) (location.getYaw() * 256F / 360F)));
-            AccessUtil.setValue(obj, "f", ((byte) (int) (location.getPitch() * 256F / 360F)));
-            AccessUtil.setValue(obj, "g", onGround);
+            FieldAccessor.setValue(obj, "a", id);
+            FieldAccessor.setValue(obj, "b", location.getX());
+            FieldAccessor.setValue(obj, "c", location.getY());
+            FieldAccessor.setValue(obj, "d", location.getZ());
+            FieldAccessor.setValue(obj, "e", ((byte) (int) (location.getYaw() * 256F / 360F)));
+            FieldAccessor.setValue(obj, "f", ((byte) (int) (location.getPitch() * 256F / 360F)));
+            FieldAccessor.setValue(obj, "g", onGround);
 
             return obj;
 
@@ -105,8 +107,8 @@ public class PacketBuilder {
             Class<?> bClass = PacketType.ENTITY_HEAD_ROTATION.getPacketClass();
 
             Object headRotation = bClass.newInstance();
-            AccessUtil.setValue(headRotation, "a", id);
-            AccessUtil.setValue(headRotation, "b", (byte) ((yaw % 360) * 256 / 360));
+            FieldAccessor.setValue(headRotation, "a", id);
+            FieldAccessor.setValue(headRotation, "b", (byte) ((yaw % 360) * 256 / 360));
             Constructor<?> constructor = aClass.getConstructor(int.class, byte.class, byte.class, boolean.class);
 
             return new Object[] {constructor.newInstance(id, (byte) ((yaw % 360) * 256 / 360),
