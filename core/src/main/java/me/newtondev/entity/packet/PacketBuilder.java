@@ -10,12 +10,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Constructor;
 
-/*
-* Just a little packet builder with all the nms
-* attributes.
-*
-* @author 1iqintellectual
- */
 public class PacketBuilder {
 
     public Object buildPlayOutSpawnEntityLiving(Object entity) {
@@ -55,7 +49,7 @@ public class PacketBuilder {
         }
     }
 
-    @Query(result = {"int", "EnumItemSlot"}, version = "1_9")
+    @Query(results = {"int", "EnumItemSlot"}, versions = {"v1_8_R3", "v1_9_R1"})
     public Object buildPlayOutEntityEquipment(int id, ItemSlot slot, ItemStack item) {
         try {
             String result = new QueryResult(this.getClass()).getResult();

@@ -2,6 +2,7 @@ package me.newtondev.entity.wrappers;
 
 import me.newtondev.entity.FakeEntityType;
 import me.newtondev.entity.exception.InvalidVersionException;
+import me.newtondev.entity.util.MinecraftVersion;
 import me.newtondev.entity.util.ReflectionUtil;
 import me.newtondev.entity.util.access.FieldAccessor;
 import org.bukkit.Location;
@@ -24,7 +25,7 @@ public class EntityWrapper {
 
     public void injectEntity(Location location) throws InvalidVersionException {
         if (isValid()) {
-            boolean higher = ReflectionUtil.versionEqualsOrHigherThan("1_13");
+            boolean higher = MinecraftVersion.valueOf(ReflectionUtil.getVersion()).higherOrEqualsThan(MinecraftVersion.v1_13_R1);
 
             try {
                 Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
@@ -75,7 +76,9 @@ public class EntityWrapper {
             if (!FieldAccessor.hasLegacy(field)) {
                 return true;
             } else {
-                if (ReflectionUtil.versionEqualsOrHigherThan(FieldAccessor.getLegacyVersion(field))) {
+                if (MinecraftVersion.valueOf(ReflectionUtil.getVersion())
+                        .higherOrEqualsThan(FieldAccessor.getLegacyVersion(field))) {
+
                     return true;
                 }
             }

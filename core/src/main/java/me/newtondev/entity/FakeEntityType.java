@@ -44,7 +44,6 @@ public enum FakeEntityType {
     WOLF("EntityWolf"),
     ZOMBIE("EntityZombie"),
     ZOMBIE_VILLAGER("EntityZombieVillager"),
-
     @Legacy(version = "1_15")
     BEE("EntityBee"),
     @Legacy(version = "1_13")

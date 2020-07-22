@@ -21,7 +21,7 @@ public class Interceptor extends ChannelInboundHandlerAdapter {
         this.player = player;
     }
 
-    @Override @Query(result = {"a", "b"})
+    @Override @Query(results = {"a", "b"}, versions = {"v1_12_R1", "1_13_R1"})
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Object packet = PacketType.USE_ENTITY.getPacketClass().newInstance();
 
@@ -32,7 +32,7 @@ public class Interceptor extends ChannelInboundHandlerAdapter {
             Object enumObject = bClass.getField("INTERACT_AT").get(null);
 
             Bukkit.getServer().getScheduler().runTask(FakeEntityFactory.INSTANCE.getPlugin(), () -> {
-                if (obj == enumObject) {
+                if (obj.equals(enumObject)) {
 
                     FakeEntityFactory.INSTANCE.getEntities().forEach(en -> {
                         if (en.getEntityId() == (int) FieldAccessor.getValue(msg, "a")

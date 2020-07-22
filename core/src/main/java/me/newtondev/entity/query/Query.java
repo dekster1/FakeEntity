@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Query {
-    String[] result();
-    String version() default "1_13";
+    String[] results();
+    String[] versions();
 }

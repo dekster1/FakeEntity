@@ -1,20 +1,15 @@
 package me.newtondev.entity.packet.netty;
 
 import io.netty.channel.Channel;
+import me.newtondev.entity.query.Query;
+import me.newtondev.entity.query.QueryResult;
 import me.newtondev.entity.util.access.FieldAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.Plugin;
 
 public class ChannelInjector {
 
-    private final Plugin plugin;
     private boolean closed = false;
-
-    public ChannelInjector(Plugin plugin) {
-        this.plugin = plugin;
-    }
 
     public void injectPlayer(Player player) {
         Channel channel = getChannel(player);
@@ -39,13 +34,14 @@ public class ChannelInjector {
         });
     }
 
+    @Query(results = {"channel", "k", "i"}, versions = {"v1_8_R3", "v1_8_R2", "v1_8_R1"})
     public Channel getChannel(Player player) {
         try {
             Object handle = player.getClass().getMethod("getHandle").invoke(player);
             Object playerConnection = handle.getClass().getField("playerConnection").get(handle);
             Object networkManager = playerConnection.getClass().getField("networkManager").get(playerConnection);
 
-            return (Channel) FieldAccessor.getValue(networkManager, "channel");
+            return (Channel) FieldAccessor.getValue(networkManager, new QueryResult(this.getClass()).getResult());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,8 +55,6 @@ public class ChannelInjector {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 uninjectPlayer(player);
             }
-
-            HandlerList.unregisterAll();
         }
     }
 }

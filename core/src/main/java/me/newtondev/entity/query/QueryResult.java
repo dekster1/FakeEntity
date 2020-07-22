@@ -1,35 +1,40 @@
 package me.newtondev.entity.query;
 
+import me.newtondev.entity.util.MinecraftVersion;
 import me.newtondev.entity.util.ReflectionUtil;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 public class QueryResult {
 
-    private Class<?> clazz;
+    private Class<?> check;
 
-    public QueryResult(Class<?> clazz) {
-        this.clazz = clazz;
+    public QueryResult(Class<?> check) {
+        this.check = check;
     }
 
     public String getResult() {
-        for (Method method : clazz.getMethods()) {
-            Annotation annotation = method.getAnnotation(Query.class);
+        for (Method method : check.getMethods()) {
+            if (method.isAnnotationPresent(Query.class)) {
 
-            if (annotation != null) {
-                return (ReflectionUtil.versionLowerThan(getVersion(method))) ? getValue(method)[0] :
-                        getValue(method)[1];
+                int current = 0;
+                for (String version : getVersions(method)) {
+                    ++current;
+
+                    if (MinecraftVersion.valueOf(version).lowerOrEqualsThan(ReflectionUtil.getVersion())) {
+                        return getResults(method)[current-1];
+                    }
+                }
             }
         }
         return null;
     }
 
-    private String[] getValue(Method method) {
-        return method.getAnnotation(Query.class).result();
+    private String[] getResults(Method method) {
+        return (method.getAnnotation(Query.class)).results();
     }
 
-    private String getVersion(Method method) {
-        return method.getAnnotation(Query.class).version();
+    private String[] getVersions(Method method) {
+        return (method.getAnnotation(Query.class)).versions();
     }
 }

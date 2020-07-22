@@ -21,7 +21,7 @@ public enum FakeEntityFactory {
 
     public void register(Plugin plugin) {
         this.plugin = plugin;
-        this.channelInjector = new ChannelInjector(plugin);
+        this.channelInjector = new ChannelInjector();
         Bukkit.getPluginManager().registerEvents(new FakeEntityListener(), plugin);
     }
 

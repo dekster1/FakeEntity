@@ -39,20 +39,6 @@ public class ReflectionUtil {
         }
     }
 
-    public static boolean versionEqualsOrHigherThan(String value) {
-        String[] values = VERSION.split("_");
-        String[] diff = value.split("_");
-
-        return (Integer.parseInt(values[1]) >= Integer.parseInt(diff[1]));
-    }
-
-    public static boolean versionLowerThan(String value) {
-        String[] values = VERSION.split("_");
-        String[] diff = value.split("_");
-
-        return (Integer.parseInt(values[1]) < Integer.parseInt(diff[1]));
-    }
-
     public static String getVersion() {
         return VERSION;
     }
