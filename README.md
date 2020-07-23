@@ -1,2 +1,2 @@
 # FakeEntity
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/524b24b6124d4fb594a4ec68a5c9a29a)](https://app.codacy.com/manual/diogenesdev/FakeEntity?utm_source=github.com&utm_medium=referral&utm_content=1iqintellectual/FakeEntity&utm_campaign=Badge_Grade_Dashboard)
+Just a little reflection to spawn entities with packets.
