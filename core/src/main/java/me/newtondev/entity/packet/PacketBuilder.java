@@ -27,9 +27,9 @@ public class PacketBuilder {
     public Object buildPlayOutEntityDestroy(int id) {
         try {
             Class<?> aClass = PacketType.ENTITY_DESTROY.getPacketClass();
-            Constructor<?> constructor = aClass.getConstructor(int.class);
+            Constructor<?> constructor = aClass.getConstructors()[1];
 
-            return constructor.newInstance(id);
+            return constructor.newInstance((Object) new int[] {id});
         } catch (Exception e) {
             e.printStackTrace();
         }

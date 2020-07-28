@@ -7,6 +7,8 @@ import me.newtondev.entity.util.access.FieldAccessor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.NoSuchElementException;
+
 public class ChannelInjector {
 
     private boolean closed = false;
@@ -28,8 +30,10 @@ public class ChannelInjector {
     public void uninjectPlayer(Player player) {
         Channel channel = getChannel(player);
         channel.eventLoop().execute(() -> {
-            if (channel.pipeline().get("fake_entity_interact") != null) {
+            try {
                 channel.pipeline().remove("fake_entity_interact");
+            } catch (NoSuchElementException e) {
+                // nice
             }
         });
     }
